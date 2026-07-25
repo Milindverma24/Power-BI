@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>frontend</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      window.global = window;
+      window.process = { env: {} };
+      window.onerror = function(message, source, lineno, colno, error) {
+        document.body.innerHTML = '<div style="background:red;color:white;padding:20px;font-family:monospace;height:100vh;">' +
+          '<h1>RAW BROWSER ERROR</h1>' +
+          '<p>Message: ' + message + '</p>' +
+          '<p>Source: ' + source + ':' + lineno + ':' + colno + '</p>' +
+          '<pre>' + (error ? error.stack : '') + '</pre>' +
+          '</div>';
+      };
+      window.addEventListener('unhandledrejection', function(event) {
+        document.body.innerHTML = '<div style="background:red;color:white;padding:20px;font-family:monospace;height:100vh;">' +
+          '<h1>RAW PROMISE ERROR</h1>' +
+          '<pre>' + (event.reason ? (event.reason.stack || event.reason.message || event.reason) : 'Unknown promise rejection') + '</pre>' +
+          '</div>';
+      });
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

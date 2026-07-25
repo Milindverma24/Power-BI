@@ -1,0 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #f4faeb;
+  --color-primary-100: #e6f4d4;
+  --color-primary-200: #ceeaaa;
+  --color-primary-300: #aedd70;
+  --color-primary-400: #93ce40;
+  --color-primary-500: #76af24;
+  --color-primary-600: #c0ff00; /* Neon Lime Main */
+  --color-primary-700: #446914;
+  --color-primary-800: #385314;
+  --color-primary-900: #304615;
+
+  /* Theme mappings mapped from standard colors */
+  --color-background: var(--bg-main);
+  --color-surface: var(--bg-surface);
+  --color-surface-hover: var(--bg-surface-hover);
+  --color-main: var(--text-main);
+  --color-muted: var(--text-muted);
+  --color-border-theme: var(--border-theme);
+
+  /* Accent Colors for Light/Dark Mode Contrast */
+  --color-accent-indigo: var(--accent-indigo);
+  --color-accent-emerald: var(--accent-emerald);
+  --color-accent-amber: var(--accent-amber);
+  --color-accent-red: var(--accent-red);
+  --color-accent-purple: var(--accent-purple);
+  --color-accent-primary: var(--accent-primary);
+  
+  --font-sans: 'Inter', sans-serif;
+
+  --animate-fade-in: fadeIn 0.5s ease-out;
+  --animate-slide-up: slideUp 0.5s ease-out;
+
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    0% { transform: translateY(20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+}
+
+@layer base {
+  :root, :root[data-theme="dark"] {
+    --bg-main: #000000;
+    --bg-surface: #0a0a0a;
+    --bg-surface-hover: #111111;
+    --text-main: #ffffff;
+    --text-muted: #94a3b8; /* slate-400 */
+    --border-theme: rgba(255, 255, 255, 0.08);
+
+    --accent-indigo: #818cf8; /* indigo-400 */
+    --accent-emerald: #34d399; /* emerald-400 */
+    --accent-amber: #fbbf24; /* amber-400 */
+    --accent-red: #f87171; /* red-400 */
+    --accent-purple: #c084fc; /* purple-400 */
+    --accent-primary: #818cf8; /* Replaced neon with indigo */
+  }
+
+  :root[data-theme="light"] {
+    --bg-main: #f8fafc; /* slate-50 */
+    --bg-surface: #ffffff;
+    --bg-surface-hover: #f1f5f9; /* slate-100 */
+    --text-main: #0f172a; /* slate-900 */
+    --text-muted: #64748b; /* slate-500 */
+    --border-theme: rgba(0, 0, 0, 0.08);
+
+    --accent-indigo: #4f46e5; /* indigo-600 */
+    --accent-emerald: #059669; /* emerald-600 */
+    --accent-amber: #d97706; /* amber-600 */
+    --accent-red: #dc2626; /* red-600 */
+    --accent-purple: #9333ea; /* purple-600 */
+    --accent-primary: #4f46e5; /* Replaced dark green with indigo */
+  }
+
+  body {
+    @apply bg-background text-muted font-sans antialiased transition-colors duration-300;
+    background-image: radial-gradient(circle at 50% -20%, rgba(192, 255, 0, 0.05), transparent 40%);
+  }
+}
+
+@layer utilities {
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .glass {
+    @apply bg-surface/80 backdrop-blur-xl rounded-[2rem];
+  }
+  
+  .bento-card {
+    @apply bg-surface-hover rounded-[2rem] p-6 transition-transform duration-300 hover:-translate-y-1;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-main to-muted;
+  }
+}

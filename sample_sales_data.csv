@@ -1,0 +1,6 @@
+order_id,date,customer_name,country,product_category,revenue,units_sold,profit_margin
+ORD-1001,2024-01-15,Acme Corp,USA,Electronics,15400.50,150,0.22
+ORD-1002,2024-01-16,Globex Inc,UK,Software,8900.00,5,0.85
+ORD-1003,2024-01-18,Stark Industries,USA,Hardware,42000.00,12,0.15
+ORD-1004,2024-01-20,Wayne Enterprises,Canada,Software,12500.00,8,0.75
+ORD-1005,2024-01-22,Cyberdyne Systems,Japan,Robotics,85000.00,2,0.40
