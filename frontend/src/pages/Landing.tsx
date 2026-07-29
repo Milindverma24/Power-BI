@@ -21,8 +21,8 @@ const Landing = () => {
       setVantaEffect(NET({
         el: vantaRef.current,
         THREE: THREE,
-        color: 0x3b82f6, // Tailwind blue-500
-        backgroundColor: 0x07101f, // Theme background
+        color: 0x1d4ed8, // Darker blue to not overpower text
+        backgroundColor: 0x020617, // Much darker background (tailwind slate-950)
         points: 15.00,
         maxDistance: 20.00,
         spacing: 15.00
@@ -82,25 +82,17 @@ const Landing = () => {
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
         
         <div className="relative z-10 max-w-4xl mx-auto px-6 animate-slide-up">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-blue-400 mb-8 backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-            v2.4.1 · Phase 10 live · 15 phases total
-          </div>
           
           <h1 className="text-6xl md:text-8xl font-display font-bold tracking-tight mb-6 leading-[1.1]">
             Business Intelligence <br/>
             <span className="italic font-light text-gradient">powered by AI.</span>
           </h1>
           
-          <p className="text-xl md:text-2xl text-slate-400 mb-10 max-w-3xl mx-auto font-light leading-relaxed">
+          <p className="text-xl md:text-2xl text-white mb-10 max-w-3xl mx-auto font-light leading-relaxed">
             Upload sales data, chat with AI, get dashboards built automatically, forecast the future, detect anomalies, and share reports — all in one platform. No SQL. No data team. No waiting.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button onClick={() => navigate('/login')} className="w-full sm:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-semibold text-lg transition-all shadow-[0_0_40px_-10px_rgba(37,99,235,0.5)] flex items-center justify-center gap-2 group">
-              Start for free
-              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-            </button>
             <button onClick={() => window.location.href="#demo"} className="w-full sm:w-auto px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-semibold text-lg transition-all border border-white/10 flex items-center justify-center gap-2">
               <PlayCircle size={20} />
               Watch demo
@@ -283,12 +275,6 @@ const Landing = () => {
       <footer className="bg-[#07101f] border-t border-white/5 py-12 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <Logo size="sm" />
-          <div className="flex gap-8 text-sm text-slate-500">
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms</a>
-            <a href="#" className="hover:text-white transition-colors">Twitter</a>
-          </div>
           <div className="text-sm text-slate-600 font-mono">
             © 2026 NeuralBI Inc. All rights reserved.
           </div>
