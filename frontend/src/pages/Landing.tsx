@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import * as THREE from 'three';
+// @ts-ignore
+import NET from 'vanta/src/vanta.net';
 import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
 import { 
@@ -10,6 +13,25 @@ import {
 const Landing = () => {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
+  const [vantaEffect, setVantaEffect] = useState<any>(null);
+  const vantaRef = useRef(null);
+
+  useEffect(() => {
+    if (!vantaEffect && vantaRef.current) {
+      setVantaEffect(NET({
+        el: vantaRef.current,
+        THREE: THREE,
+        color: 0x3b82f6, // Tailwind blue-500
+        backgroundColor: 0x07101f, // Theme background
+        points: 15.00,
+        maxDistance: 20.00,
+        spacing: 15.00
+      }));
+    }
+    return () => {
+      if (vantaEffect) vantaEffect.destroy();
+    };
+  }, [vantaEffect]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -70,7 +92,7 @@ const Landing = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-40 pb-20 mesh-gradient min-h-[90vh] flex flex-col items-center justify-center text-center overflow-hidden">
+      <section ref={vantaRef} className="relative pt-40 pb-20 min-h-[90vh] flex flex-col items-center justify-center text-center overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
         
         <div className="relative z-10 max-w-4xl mx-auto px-6 animate-slide-up">
