@@ -17,7 +17,7 @@ const Logo: React.FC<LogoProps> = ({ className = '', size = 'md' }) => {
         <Activity size={iconSize} className="text-white" strokeWidth={2.5} />
       </div>
       <div className="flex flex-col justify-center">
-        <span className={`font-display font-bold tracking-tight text-main ${textSize} leading-none`}>NeuralBI</span>
+        <span className={`font-display font-bold tracking-tight text-white ${textSize} leading-none`}>NeuralBI</span>
       </div>
     </div>
   );
