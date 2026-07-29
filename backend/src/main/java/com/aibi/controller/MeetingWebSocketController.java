@@ -1,7 +1,7 @@
 package com.aibi.controller;
 
 import dev.langchain4j.model.chat.ChatLanguageModel;
-import dev.langchain4j.model.ollama.OllamaChatModel;
+import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,10 +28,10 @@ public class MeetingWebSocketController {
         private boolean isAi;
     }
 
-    public MeetingWebSocketController(@Value("${langchain4j.ollama.chat.model.base-url}") String baseUrl,
-                                      @Value("${langchain4j.ollama.chat.model.model-name}") String modelName) {
-        this.chatModel = OllamaChatModel.builder()
-                .baseUrl(baseUrl)
+    public MeetingWebSocketController(@Value("${langchain4j.gemini.chat.model.api-key}") String apiKey,
+                                      @Value("${langchain4j.gemini.chat.model.model-name}") String modelName) {
+        this.chatModel = GoogleAiGeminiChatModel.builder()
+                .apiKey(apiKey)
                 .modelName(modelName)
                 .temperature(0.7) // Creative for meetings
                 .build();

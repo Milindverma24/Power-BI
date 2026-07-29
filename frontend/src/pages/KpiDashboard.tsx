@@ -25,7 +25,7 @@ const KpiDashboard = () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:8080/api/v1/kpi', {
+      const res = await axios.get('/api/v1/kpi', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setKpis(res.data);
@@ -64,7 +64,7 @@ const KpiDashboard = () => {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-accent-indigo hover:bg-accent-indigo text-main font-medium py-2.5 px-6 rounded-xl transition flex items-center gap-2 shadow-[0_4px_20px_rgba(79,70,229,0.15)] shadow-accent-indigo/20"
+          className="bg-accent-indigo hover:bg-accent-indigo text-white font-medium py-2.5 px-6 rounded-xl transition flex items-center gap-2 shadow-[0_4px_20px_rgba(79,70,229,0.15)] shadow-accent-indigo/20"
         >
           <Plus size={20} />
           Define KPI
@@ -116,7 +116,7 @@ const KpiDashboard = () => {
                   <BrainCircuit className="text-accent-indigo shrink-0 mt-0.5" size={20} />
                   <div>
                     <div className="text-xs font-bold text-accent-indigo uppercase tracking-wider mb-1">AI Health Analysis</div>
-                    <p className="text-sm text-indigo-100/80 leading-relaxed">
+                    <p className="text-sm text-muted leading-relaxed">
                       {kpi.aiExplanation || 'Evaluating...'}
                     </p>
                   </div>

@@ -18,7 +18,8 @@ import PredictiveAnalytics from './pages/PredictiveAnalytics';
 import AdminDashboard from './pages/AdminDashboard';
 import RootCauseExplorer from './pages/RootCauseExplorer';
 import DataStoryViewer from './pages/DataStoryViewer';
-import MeetingRoom from './pages/MeetingRoom';
+import Collaboration from './pages/Collaboration';
+import Reports from './pages/Reports';
 import GoalTracker from './pages/GoalTracker';
 import InsightMarketplace from './pages/InsightMarketplace';
 
@@ -35,7 +36,7 @@ import { NavLink } from 'react-router-dom';
 import Logo from './components/Logo';
 import { 
   LayoutDashboard, Database, MessageSquare, Video, Activity, Bell, 
-  TrendingUp, Target, ShoppingBag, Search, Settings, Shield, Compass, Grid, Users 
+  TrendingUp, Target, ShoppingBag, Search, Settings, Shield, Compass, Grid, Users, FileText 
 } from 'lucide-react';
 
 const NestedNavItem = ({ to, children, badge, badgeColor }: any) => {
@@ -150,14 +151,15 @@ const Dashboard = () => {
 
           <NavCategory icon={Database} title="Data Management" defaultOpen={true}>
             <NestedNavItem to="/dashboard/data-sources">Sources</NestedNavItem>
-            <NestedNavItem to="/dashboard/meeting">Meeting Room</NestedNavItem>
+            <NestedNavItem to="/dashboard/collaboration">Collaboration</NestedNavItem>
           </NavCategory>
 
           <NavCategory icon={Activity} title="Analytics" defaultOpen={true}>
+            <NestedNavItem to="/dashboard/reports">Reports</NestedNavItem>
             <NestedNavItem to="/dashboard/kpi">KPI Engine</NestedNavItem>
-            <NestedNavItem to="/dashboard/alerts" badge="3" badgeColor="bg-accent-amber/20 text-accent-amber border border-accent-amber/30">Smart Alerts</NestedNavItem>
+            <NestedNavItem to="/dashboard/alerts">Smart Alerts</NestedNavItem>
             <NestedNavItem to="/dashboard/predict">Predictive</NestedNavItem>
-            <NestedNavItem to="/dashboard/goals" badge="8" badgeColor="bg-accent-emerald/20 text-accent-emerald border border-accent-emerald/30">Goal Tracker</NestedNavItem>
+            <NestedNavItem to="/dashboard/goals">Goal Tracker</NestedNavItem>
           </NavCategory>
 
           <NavCategory icon={Compass} title="Explore" defaultOpen={false}>
@@ -181,8 +183,8 @@ const Dashboard = () => {
               {user?.firstName?.charAt(0) || 'U'}
             </div>
             <div className="text-left">
-              <div className="text-sm font-semibold text-main leading-tight">{user?.firstName}</div>
-              <div className="text-xs text-muted font-medium">{user?.role}</div>
+              <div className="text-sm font-semibold text-main leading-tight">{user?.firstName} {user?.lastName}</div>
+              <div className="text-xs text-muted font-medium capitalize">{user?.role?.replace('_', ' ').toLowerCase()}</div>
             </div>
           </div>
           
@@ -213,7 +215,8 @@ const Dashboard = () => {
               <Route path="/" element={<DashboardOverview />} />
               <Route path="/data-sources" element={<DataSources />} />
               <Route path="/chat" element={<DataChat />} />
-              <Route path="/meeting" element={<MeetingRoom />} />
+              <Route path="/collaboration" element={<Collaboration />} />
+              <Route path="/reports" element={<Reports />} />
               <Route path="/kpi" element={<KpiDashboard />} />
               <Route path="/alerts" element={<AnomalyTimeline />} />
               <Route path="/predict" element={<PredictiveAnalytics />} />
@@ -231,6 +234,8 @@ const Dashboard = () => {
   );
 };
 
+import AcceptInvite from './pages/AcceptInvite';
+
 function App() {
   return (
     <ThemeProvider>
@@ -240,6 +245,7 @@ function App() {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/accept-invite" element={<AcceptInvite />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/verify-email" element={<VerifyEmail />} />

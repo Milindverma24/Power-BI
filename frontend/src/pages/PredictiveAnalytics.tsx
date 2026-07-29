@@ -14,7 +14,10 @@ const PredictiveAnalytics = () => {
   useEffect(() => {
     const fetchWidgets = async () => {
       try {
-        const res = await axios.get('http://localhost:8080/api/v1/dashboard/widgets');
+        const token = localStorage.getItem('token');
+        const res = await axios.get('/api/v1/dashboard/widgets', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         setWidgets(res.data);
       } catch (err) {
         console.error("Failed to load widgets", err);
@@ -27,10 +30,13 @@ const PredictiveAnalytics = () => {
     if (!selectedWidget) return;
     setIsForecasting(true);
     try {
+      const token = localStorage.getItem('token');
       const config = JSON.parse(selectedWidget.chartConfig);
-      const res = await axios.post(`http://localhost:8080/api/v1/predict/forecast/${selectedWidget.id}`, {
+      const res = await axios.post(`/api/v1/predict/forecast/${selectedWidget.id}`, {
         xAxisKey: config.xAxisKey,
         yAxisKey: config.yAxisKey
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       setForecastData(res.data);
     } catch (err) {
@@ -44,10 +50,13 @@ const PredictiveAnalytics = () => {
     if (!selectedWidget || !simulationQuery.trim()) return;
     setIsSimulating(true);
     try {
+      const token = localStorage.getItem('token');
       const config = JSON.parse(selectedWidget.chartConfig);
-      const res = await axios.post(`http://localhost:8080/api/v1/predict/simulate/${selectedWidget.id}`, {
+      const res = await axios.post(`/api/v1/predict/simulate/${selectedWidget.id}`, {
         yAxisKey: config.yAxisKey,
         instruction: simulationQuery
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       // Handle setting simulated data to a chart
       setForecastData(res.data);

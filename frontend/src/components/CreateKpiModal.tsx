@@ -23,7 +23,7 @@ const CreateKpiModal = ({ onClose, onKpiCreated }: CreateKpiModalProps) => {
   const fetchDataSources = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:8080/api/v1/data-sources', {
+      const res = await axios.get('/api/v1/data-sources', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDataSources(res.data);
@@ -43,7 +43,7 @@ const CreateKpiModal = ({ onClose, onKpiCreated }: CreateKpiModalProps) => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:8080/api/v1/kpi', {
+      await axios.post('/api/v1/kpi', {
         dataSourceId,
         name,
         targetValue: parseFloat(targetValue),

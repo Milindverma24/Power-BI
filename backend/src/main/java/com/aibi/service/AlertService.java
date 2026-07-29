@@ -4,7 +4,7 @@ import com.aibi.domain.AnomalyAlert;
 import com.aibi.domain.DataSource;
 import com.aibi.repository.AnomalyAlertRepository;
 import dev.langchain4j.model.chat.ChatLanguageModel;
-import dev.langchain4j.model.ollama.OllamaChatModel;
+import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,12 +24,12 @@ public class AlertService {
 
     public AlertService(AnomalyAlertRepository alertRepository,
                         JdbcTemplate jdbcTemplate,
-                        @Value("${langchain4j.ollama.chat.model.base-url}") String baseUrl,
-                        @Value("${langchain4j.ollama.chat.model.model-name}") String modelName) {
+                        @Value("${langchain4j.gemini.chat.model.api-key}") String apiKey,
+                        @Value("${langchain4j.gemini.chat.model.model-name:gemini-1.5-flash}") String modelName) {
         this.alertRepository = alertRepository;
         this.jdbcTemplate = jdbcTemplate;
-        this.chatModel = OllamaChatModel.builder()
-                .baseUrl(baseUrl)
+        this.chatModel = GoogleAiGeminiChatModel.builder()
+                .apiKey(apiKey)
                 .modelName(modelName)
                 .temperature(0.2) // Slight temperature for creative root causes
                 .build();

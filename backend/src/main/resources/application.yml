@@ -2,12 +2,12 @@ spring:
   application:
     name: backend
   datasource:
-    url: jdbc:postgresql://localhost:5432/aibi
-    username: postgres
-    password: MySQL123
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/aibi}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:MySQL123}
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: false
     properties:
       hibernate:
@@ -20,22 +20,38 @@ spring:
       client:
         registration:
           google:
-            client-id: PLACEHOLDER_GOOGLE_CLIENT_ID
-            client-secret: PLACEHOLDER_GOOGLE_CLIENT_SECRET
+            client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
             scope:
               - email
               - profile
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: jatinverma1234567890@gmail.com
+    password: oupa dpog jalp srvn
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 server:
   port: 8080
 
 jwt:
-  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  secret: ${JWT_SECRET:your-jwt-secret-key-that-is-very-long-at-least-256-bits}
   expiration: 86400000
 
+app:
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:5173}
+
 langchain4j:
-  ollama:
+  gemini:
     chat:
       model:
-        base-url: http://localhost:11434
-        model-name: llama3
+        api-key: ${GEMINI_API_KEY:your-gemini-api-key}
+        model-name: gemini-flash-latest

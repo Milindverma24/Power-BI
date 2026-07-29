@@ -22,7 +22,7 @@ const VerifyEmail = () => {
       }
 
       try {
-        await axios.post('http://localhost:8080/api/v1/auth/verify-email', { token });
+        await axios.post('/api/v1/auth/verify-email', { token });
         setSuccess(true);
       } catch (err: any) {
         setError(err.response?.data?.message || 'Verification failed. The link may have expired.');

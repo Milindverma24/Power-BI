@@ -68,7 +68,7 @@ const RootCauseExplorer = () => {
   useEffect(() => {
     const fetchSources = async () => {
       try {
-        const dsRes = await axios.get('http://localhost:8080/api/v1/data-sources');
+        const dsRes = await axios.get('/api/v1/data-sources');
         setDataSources(dsRes.data);
         if (dsRes.data.length > 0) {
           setSelectedDataSource(dsRes.data[0].id);
@@ -86,7 +86,7 @@ const RootCauseExplorer = () => {
     setTreeData(null);
 
     try {
-      const res = await axios.post(`http://localhost:8080/api/v1/root-cause/explore/${sourceId}`, {
+      const res = await axios.post(`/api/v1/root-cause/explore/${sourceId}`, {
         query: q
       });
       setTreeData(res.data);

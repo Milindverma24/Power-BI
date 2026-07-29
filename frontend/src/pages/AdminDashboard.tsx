@@ -15,10 +15,10 @@ const AdminDashboard = () => {
 
     const fetchAdminData = async () => {
       try {
-        const statsRes = await axios.get('http://localhost:8080/api/v1/admin/stats');
+        const statsRes = await axios.get('/api/v1/admin/stats');
         setStats(statsRes.data);
 
-        const usersRes = await axios.get('http://localhost:8080/api/v1/admin/users');
+        const usersRes = await axios.get('/api/v1/admin/users');
         setUsers(usersRes.data);
       } catch (err) {
         console.error("Failed to load admin data", err);

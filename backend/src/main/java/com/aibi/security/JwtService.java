@@ -34,8 +34,15 @@ public class JwtService {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> extraClaims = new HashMap<>();
-        if (userDetails instanceof com.aibi.domain.User user && user.getOrganization() != null) {
-            extraClaims.put("organizationId", user.getOrganization().getId());
+        if (userDetails instanceof com.aibi.domain.User user) {
+            extraClaims.put("id", user.getId());
+            extraClaims.put("firstName", user.getFirstName());
+            extraClaims.put("lastName", user.getLastName());
+            extraClaims.put("role", user.getRole().name());
+            if (user.getOrganization() != null) {
+                extraClaims.put("organizationId", user.getOrganization().getId());
+                extraClaims.put("organizationName", user.getOrganization().getName());
+            }
         }
         return generateToken(extraClaims, userDetails);
     }

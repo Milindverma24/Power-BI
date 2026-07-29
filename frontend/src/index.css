@@ -2,16 +2,16 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #f4faeb;
-  --color-primary-100: #e6f4d4;
-  --color-primary-200: #ceeaaa;
-  --color-primary-300: #aedd70;
-  --color-primary-400: #93ce40;
-  --color-primary-500: #76af24;
-  --color-primary-600: #c0ff00; /* Neon Lime Main */
-  --color-primary-700: #446914;
-  --color-primary-800: #385314;
-  --color-primary-900: #304615;
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6; /* Electric Blue */
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
 
   /* Theme mappings mapped from standard colors */
   --color-background: var(--bg-main);
@@ -21,7 +21,7 @@
   --color-muted: var(--text-muted);
   --color-border-theme: var(--border-theme);
 
-  /* Accent Colors for Light/Dark Mode Contrast */
+  /* Accent Colors */
   --color-accent-indigo: var(--accent-indigo);
   --color-accent-emerald: var(--accent-emerald);
   --color-accent-amber: var(--accent-amber);
@@ -30,6 +30,8 @@
   --color-accent-primary: var(--accent-primary);
   
   --font-sans: 'Inter', sans-serif;
+  --font-display: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
   --animate-fade-in: fadeIn 0.5s ease-out;
   --animate-slide-up: slideUp 0.5s ease-out;
@@ -47,40 +49,43 @@
 
 @layer base {
   :root, :root[data-theme="dark"] {
-    --bg-main: #000000;
-    --bg-surface: #0a0a0a;
-    --bg-surface-hover: #111111;
-    --text-main: #ffffff;
-    --text-muted: #94a3b8; /* slate-400 */
+    --bg-main: #07101f; /* Deep navy */
+    --bg-surface: #101828; /* Slightly lighter navy for cards */
+    --bg-surface-hover: #1d2939; /* Hover state */
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
     --border-theme: rgba(255, 255, 255, 0.08);
 
-    --accent-indigo: #818cf8; /* indigo-400 */
-    --accent-emerald: #34d399; /* emerald-400 */
-    --accent-amber: #fbbf24; /* amber-400 */
-    --accent-red: #f87171; /* red-400 */
-    --accent-purple: #c084fc; /* purple-400 */
-    --accent-primary: #818cf8; /* Replaced neon with indigo */
+    --accent-indigo: #3b82f6; /* Electric Blue */
+    --accent-emerald: #10b981; /* Emerald */
+    --accent-amber: #f59e0b; /* Amber */
+    --accent-red: #ef4444; /* Red */
+    --accent-purple: #8b5cf6; /* Purple */
+    --accent-primary: #3b82f6; /* Electric Blue */
   }
 
   :root[data-theme="light"] {
-    --bg-main: #f8fafc; /* slate-50 */
+    --bg-main: #f8fafc;
     --bg-surface: #ffffff;
-    --bg-surface-hover: #f1f5f9; /* slate-100 */
-    --text-main: #0f172a; /* slate-900 */
-    --text-muted: #64748b; /* slate-500 */
+    --bg-surface-hover: #f1f5f9;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
     --border-theme: rgba(0, 0, 0, 0.08);
 
-    --accent-indigo: #4f46e5; /* indigo-600 */
-    --accent-emerald: #059669; /* emerald-600 */
-    --accent-amber: #d97706; /* amber-600 */
-    --accent-red: #dc2626; /* red-600 */
-    --accent-purple: #9333ea; /* purple-600 */
-    --accent-primary: #4f46e5; /* Replaced dark green with indigo */
+    --accent-indigo: #2563eb;
+    --accent-emerald: #059669;
+    --accent-amber: #d97706;
+    --accent-red: #dc2626;
+    --accent-purple: #7c3aed;
+    --accent-primary: #2563eb;
   }
 
   body {
     @apply bg-background text-muted font-sans antialiased transition-colors duration-300;
-    background-image: radial-gradient(circle at 50% -20%, rgba(192, 255, 0, 0.05), transparent 40%);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
   }
 }
 

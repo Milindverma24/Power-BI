@@ -2,7 +2,10 @@ package com.aibi.service;
 
 import com.aibi.domain.DashboardWidget;
 import com.aibi.domain.Organization;
+import com.aibi.domain.User;
+import com.aibi.model.Report;
 import com.aibi.repository.DashboardWidgetRepository;
+import com.aibi.repository.ReportRepository;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
@@ -20,8 +23,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +36,75 @@ import java.util.Map;
 public class ReportService {
 
     private final DashboardWidgetRepository widgetRepository;
+    private final ReportRepository reportRepository;
     private final JdbcTemplate jdbcTemplate;
     private final ChatLanguageModel chatLanguageModel;
+    private final ObjectMapper objectMapper;
+
+    public Report generateDynamicReport(Organization organization, User user) {
+        List<DashboardWidget> widgets = widgetRepository.findByOrganizationIdOrderByCreatedAtDesc(organization.getId());
+        
+        StringBuilder dataContext = new StringBuilder();
+        ArrayNode contentsNode = objectMapper.createArrayNode();
+        int pageCounter = 1;
+
+        // Executive Summary is always page 1-2
+        ObjectNode execSummary = objectMapper.createObjectNode();
+        execSummary.put("title", "Executive Summary");
+        execSummary.put("pages", "pp. 1-2");
+        contentsNode.add(execSummary);
+        pageCounter += 2;
+
+        for (DashboardWidget widget : widgets) {
+            ObjectNode section = objectMapper.createObjectNode();
+            section.put("title", widget.getTitle());
+            section.put("pages", "pp. " + pageCounter + "-" + (pageCounter + 1));
+            contentsNode.add(section);
+            pageCounter += 2;
+
+            try {
+                List<Map<String, Object>> data = jdbcTemplate.queryForList(widget.getSqlQuery());
+                if (!data.isEmpty()) {
+                    dataContext.append("Widget: ").append(widget.getTitle()).append("\n");
+                    int limit = Math.min(data.size(), 10);
+                    for (int i = 0; i < limit; i++) {
+                        dataContext.append(data.get(i).toString()).append("\n");
+                    }
+                    dataContext.append("\n");
+                }
+            } catch (Exception e) {
+                log.warn("Could not load data for widget: {}", widget.getTitle());
+            }
+        }
+
+        String narrative = "Report generated without data context.";
+        if (dataContext.length() > 0) {
+            String prompt = "You are an expert AI business analyst for NeuralBI. Based on the following dashboard data samples, write a 2-paragraph highly professional Executive Narrative summarizing the business performance, key trends, and potential risks. Do not include raw JSON. Write it as a business narrative.\n\nData:\n" + dataContext.toString();
+            try {
+                narrative = chatLanguageModel.generate(prompt);
+            } catch (Exception e) {
+                log.error("Failed to generate narrative via LLM", e);
+                narrative = "Failed to generate narrative due to AI service disruption.";
+            }
+        }
+
+        Report report = new Report();
+        report.setTitle("Dynamic Report - " + LocalDateTime.now().toLocalDate().toString());
+        report.setType("Ad-Hoc");
+        report.setReportDate(LocalDateTime.now());
+        report.setAiGenerated(true);
+        report.setScheduled(false);
+        report.setOrganization(organization);
+        report.setUser(user);
+        report.setExecutiveNarrative(narrative);
+        try {
+            report.setContentsJson(objectMapper.writeValueAsString(contentsNode));
+        } catch (Exception e) {
+            report.setContentsJson("[]");
+        }
+
+        return reportRepository.save(report);
+    }
 
     public byte[] generatePdfReport(Organization organization) {
         List<DashboardWidget> widgets = widgetRepository.findByOrganizationIdOrderByCreatedAtDesc(organization.getId());

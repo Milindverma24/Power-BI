@@ -24,10 +24,10 @@ const GoalTracker = () => {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const goalsRes = await axios.get('http://localhost:8080/api/v1/goals');
+      const goalsRes = await axios.get('/api/v1/goals');
       setGoals(goalsRes.data);
       
-      const widgetsRes = await axios.get('http://localhost:8080/api/v1/dashboard/widgets');
+      const widgetsRes = await axios.get('/api/v1/dashboard/widgets');
       setWidgets(widgetsRes.data);
     } catch (err) {
       console.error("Failed to load goals data", err);
@@ -39,7 +39,7 @@ const GoalTracker = () => {
   const handleCreateGoal = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:8080/api/v1/goals', {
+      await axios.post('/api/v1/goals', {
         ...newGoal,
         targetDate: new Date(newGoal.targetDate).toISOString()
       });

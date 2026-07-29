@@ -1,7 +1,7 @@
 package com.aibi.service;
 
 import dev.langchain4j.model.chat.ChatLanguageModel;
-import dev.langchain4j.model.ollama.OllamaChatModel;
+import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -12,11 +12,12 @@ public class AiUnderstandingService {
 
     private final ChatLanguageModel chatModel;
 
-    public AiUnderstandingService(@Value("${ollama.base-url:http://localhost:11434}") String ollamaBaseUrl) {
-        // We configure the local Ollama model (llama3 by default)
-        this.chatModel = OllamaChatModel.builder()
-                .baseUrl(ollamaBaseUrl)
-                .modelName("llama3")
+    public AiUnderstandingService(@Value("${langchain4j.gemini.chat.model.api-key}") String apiKey,
+                                  @Value("${langchain4j.gemini.chat.model.model-name:gemini-1.5-flash}") String modelName) {
+        // We configure the Gemini model
+        this.chatModel = GoogleAiGeminiChatModel.builder()
+                .apiKey(apiKey)
+                .modelName(modelName)
                 .temperature(0.3)
                 .build();
     }

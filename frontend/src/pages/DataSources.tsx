@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { UploadCloud, FileSpreadsheet, CheckCircle2, Loader2, Database, BrainCircuit, TrendingUp, Globe, Table2, HardDrive } from 'lucide-react';
+import { UploadCloud, FileSpreadsheet, CheckCircle2, Loader2, Database, BrainCircuit, TrendingUp, Globe, Table2, HardDrive, Trash2 } from 'lucide-react';
 
 interface DatasetInsight {
   id: string;
@@ -40,7 +40,7 @@ const DataSources = () => {
 
   const fetchSources = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/api/v1/data-sources');
+      const res = await axios.get('/api/v1/data-sources');
       setSources(res.data);
     } catch (err) {
       console.error("Failed to fetch data sources", err);
@@ -62,7 +62,7 @@ const DataSources = () => {
 
     setUploading(true);
     try {
-      await axios.post('http://localhost:8080/api/v1/data-sources/upload', formData, {
+      await axios.post('/api/v1/data-sources/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       await fetchSources();
@@ -80,7 +80,7 @@ const DataSources = () => {
     setUploading(true);
     setActiveModal(null);
     try {
-      await axios.post('http://localhost:8080/api/v1/data-sources/import/rest', { url: restUrl });
+      await axios.post('/api/v1/data-sources/import/rest', { url: restUrl });
       await fetchSources();
     } catch (err) {
       alert("Failed to import from REST API");
@@ -94,7 +94,7 @@ const DataSources = () => {
     setUploading(true);
     setActiveModal(null);
     try {
-      await axios.post('http://localhost:8080/api/v1/data-sources/import/sheets', { sheetId });
+      await axios.post('/api/v1/data-sources/import/sheets', { sheetId });
       await fetchSources();
     } catch (err) {
       alert("Failed to import from Google Sheets");
@@ -108,7 +108,7 @@ const DataSources = () => {
     setUploading(true);
     setActiveModal(null);
     try {
-      await axios.post('http://localhost:8080/api/v1/data-sources/import/database', {
+      await axios.post('/api/v1/data-sources/import/database', {
         url: dbUrl,
         username: dbUser,
         password: dbPass,
@@ -119,6 +119,16 @@ const DataSources = () => {
       alert("Failed to import from Database");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this dataset? This will also remove any dashboards and insights associated with it.")) return;
+    try {
+      await axios.delete(`/api/v1/data-sources/${id}`);
+      await fetchSources();
+    } catch (err) {
+      alert("Failed to delete dataset");
     }
   };
 
@@ -204,6 +214,9 @@ const DataSources = () => {
                     </div>
                   </div>
                 </div>
+                <button onClick={() => handleDelete(source.id)} className="p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-colors" title="Delete Dataset">
+                  <Trash2 size={18} />
+                </button>
               </div>
 
               {source.insight && (
@@ -263,7 +276,7 @@ const DataSources = () => {
               </div>
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={() => setActiveModal(null)} className="flex-1 bg-surface-hover text-main py-3 rounded-xl hover:bg-surface-hover">Cancel</button>
-                <button type="submit" className="flex-1 bg-accent-indigo text-main py-3 rounded-xl hover:bg-accent-indigo">Import</button>
+                <button type="submit" className="flex-1 bg-accent-indigo text-white py-3 rounded-xl hover:bg-accent-indigo">Import</button>
               </div>
             </form>
           </div>

@@ -28,12 +28,15 @@ public class PredictiveAnalyticsController {
 
     @Data
     public static class PredictRequest {
+        @com.fasterxml.jackson.annotation.JsonProperty("xAxisKey")
         private String xAxisKey;
+        @com.fasterxml.jackson.annotation.JsonProperty("yAxisKey")
         private String yAxisKey;
     }
 
     @Data
     public static class SimulateRequest {
+        @com.fasterxml.jackson.annotation.JsonProperty("yAxisKey")
         private String yAxisKey;
         private String instruction;
     }

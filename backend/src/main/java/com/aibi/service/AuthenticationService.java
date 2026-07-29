@@ -90,6 +90,7 @@ public class AuthenticationService {
                 .build();
     }
 
+    @Transactional
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -113,8 +114,58 @@ public class AuthenticationService {
     }
 
     @Transactional
+    public AuthenticationResponse authenticateWithGoogle(com.aibi.dto.GoogleAuthRequest request) {
+        try {
+            com.google.api.client.http.HttpTransport transport = new com.google.api.client.http.javanet.NetHttpTransport();
+            com.google.api.client.json.JsonFactory jsonFactory = new com.google.api.client.json.gson.GsonFactory();
+            com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier verifier = new com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier.Builder(transport, jsonFactory)
+                .setAudience(java.util.Collections.singletonList("153975858529-50u641q6mbbhob6vipcbvicjd9qjvdh1.apps.googleusercontent.com"))
+                .build();
+            
+            com.google.api.client.googleapis.auth.oauth2.GoogleIdToken idToken = verifier.verify(request.getIdToken());
+            if (idToken != null) {
+                com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload payload = idToken.getPayload();
+                String email = payload.getEmail();
+                
+                // Find or create user
+                User user = repository.findByEmail(email).orElseGet(() -> {
+                    // Create new organization for new google user
+                    Organization org = Organization.builder()
+                            .name((String) payload.get("given_name") + "'s Organization")
+                            .build();
+                    org = organizationRepository.save(org);
+
+                    User newUser = User.builder()
+                            .email(email)
+                            .firstName((String) payload.get("given_name"))
+                            .lastName((String) payload.get("family_name"))
+                            .role(com.aibi.domain.Role.ORG_ADMIN)
+                            .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                            .emailVerified(true) // Google emails are already verified
+                            .organization(org)
+                            .build();
+                    return repository.save(newUser);
+                });
+
+                var jwtToken = jwtService.generateToken(user);
+                var refreshToken = createRefreshToken(user);
+
+                return AuthenticationResponse.builder()
+                        .token(jwtToken)
+                        .refreshToken(refreshToken.getToken())
+                        .build();
+            } else {
+                throw new RuntimeException("Invalid Google ID token.");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to verify Google token", e);
+        }
+    }
+
+    @Transactional
     public RefreshToken createRefreshToken(User user) {
         refreshTokenRepository.deleteByUser(user);
+        refreshTokenRepository.flush();
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
                 .token(UUID.randomUUID().toString())

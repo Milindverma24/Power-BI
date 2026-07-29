@@ -58,6 +58,17 @@
 			<artifactId>flyway-database-postgresql</artifactId>
 		</dependency>
 
+		<!-- Mail & Google Auth -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.api-client</groupId>
+			<artifactId>google-api-client</artifactId>
+			<version>2.0.0</version>
+		</dependency>
+
 		<!-- Security & Auth -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -110,12 +121,12 @@
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j</artifactId>
-			<version>0.32.0</version>
+			<version>0.34.0</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
-			<artifactId>langchain4j-ollama-spring-boot-starter</artifactId>
-			<version>0.32.0</version>
+			<artifactId>langchain4j-google-ai-gemini</artifactId>
+			<version>0.34.0</version>
 		</dependency>
 
 		<!-- Test -->

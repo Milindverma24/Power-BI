@@ -64,16 +64,19 @@ const DashboardOverview = () => {
   const [benchmarks, setBenchmarks] = useState<Record<string, any[]>>({});
   const [loadingBenchmarks, setLoadingBenchmarks] = useState(false);
 
+  // KPIs State
+  const [kpis, setKpis] = useState<any[]>([]);
+
   const loadWidgets = async (timestamp: string | null = null) => {
     try {
-      const res = await axios.get('http://localhost:8080/api/v1/dashboard/widgets');
+      const res = await axios.get('/api/v1/dashboard/widgets');
       const widgetList: DashboardWidget[] = res.data;
       
       const widgetPromises = widgetList.map(async (widget) => {
         try {
           const url = timestamp 
-            ? `http://localhost:8080/api/v1/dashboard/widgets/${widget.id}/data?timestamp=${encodeURIComponent(timestamp)}`
-            : `http://localhost:8080/api/v1/dashboard/widgets/${widget.id}/data`;
+            ? `/api/v1/dashboard/widgets/${widget.id}/data?timestamp=${encodeURIComponent(timestamp)}`
+            : `/api/v1/dashboard/widgets/${widget.id}/data`;
           const dataRes = await axios.get(url);
           return {
             widget,
@@ -108,7 +111,7 @@ const DashboardOverview = () => {
   const handleDeleteWidget = async (id: string) => {
     if (!confirm("Are you sure you want to remove this chart from the dashboard?")) return;
     try {
-      await axios.delete(`http://localhost:8080/api/v1/dashboard/widgets/${id}`);
+      await axios.delete(`/api/v1/dashboard/widgets/${id}`);
       setWidgets(prev => prev.filter(w => w.widget.id !== id));
     } catch (err) {
       alert("Failed to delete widget");
@@ -118,14 +121,20 @@ const DashboardOverview = () => {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const mockDashboard: Dashboard = { id: 'd1', title: 'Main Organization Dashboard', status: 'DRAFT' };
+        const mockDashboard: Dashboard = { id: 'd1', title: 'Business Overview', status: 'DRAFT' };
         setDashboards([mockDashboard]);
         setActiveDashboard(mockDashboard);
         setVersions([{ id: 'v1', versionNumber: 1, createdAt: new Date().toISOString() }]);
 
         await loadWidgets();
+        
+        const token = localStorage.getItem('token');
+        const kpiRes = await axios.get('/api/v1/kpi', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setKpis(kpiRes.data);
 
-        const dsRes = await axios.get('http://localhost:8080/api/v1/data-sources');
+        const dsRes = await axios.get('/api/v1/data-sources');
         setDataSources(dsRes.data);
         if (dsRes.data.length > 0) {
           setSelectedDataSource(dsRes.data[0].id);
@@ -145,7 +154,7 @@ const DashboardOverview = () => {
     if (!selectedDataSource || !dashboardTheme.trim()) return;
     setIsGenerating(true);
     try {
-      await axios.post(`http://localhost:8080/api/v1/dashboard/generate/${selectedDataSource}`, { theme: dashboardTheme });
+      await axios.post(`/api/v1/dashboard/generate/${selectedDataSource}`, { theme: dashboardTheme });
       setIsModalOpen(false);
       setDashboardTheme('');
       await loadWidgets();
@@ -158,7 +167,7 @@ const DashboardOverview = () => {
 
   const fetchRecommendation = async (dsId: string, currentTitles: string[]) => {
     try {
-      const res = await axios.post(`http://localhost:8080/api/v1/dashboard/recommend/${dsId}`, currentTitles);
+      const res = await axios.post(`/api/v1/dashboard/recommend/${dsId}`, currentTitles);
       setRecommendation(res.data);
     } catch (err) {
       console.log("No recommendation available");
@@ -176,7 +185,7 @@ const DashboardOverview = () => {
     if (!recommendation || !selectedDataSource) return;
     setIsAddingRecommendation(true);
     try {
-      await axios.post('http://localhost:8080/api/v1/dashboard/widgets', {
+      await axios.post('/api/v1/dashboard/widgets', {
         dataSourceId: selectedDataSource,
         title: recommendation.title,
         sqlQuery: recommendation.sqlQuery,
@@ -200,7 +209,7 @@ const DashboardOverview = () => {
       const newBenchmarks: Record<string, any[]> = {};
       try {
         const promises = widgets.map(async (w) => {
-          const res = await axios.get(`http://localhost:8080/api/v1/benchmarks/widget/${w.widget.id}`);
+          const res = await axios.get(`/api/v1/benchmarks/widget/${w.widget.id}`);
           newBenchmarks[w.widget.id] = res.data;
         });
         await Promise.all(promises);
@@ -220,7 +229,7 @@ const DashboardOverview = () => {
          return;
       }
       
-      const res = await axios.get(`http://localhost:8080/api/v1/reports/download?dashboardId=${activeDashboard?.id}&format=${format}`, {
+      const res = await axios.get(`/api/v1/reports/download?dashboardId=${activeDashboard?.id}&format=${format}`, {
         responseType: 'blob',
       });
       
@@ -268,14 +277,10 @@ const DashboardOverview = () => {
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <LayoutDashboard className="text-accent-indigo" size={32} />
             <h1 className="text-4xl font-bold tracking-tight text-main">{activeDashboard?.title}</h1>
-            {activeDashboard && getStatusBadge(activeDashboard.status)}
           </div>
           <p className="text-muted text-sm flex items-center gap-4">
-            <span className="flex items-center gap-1 cursor-pointer hover:text-main transition">
-              <History size={14}/> Version {versions[0]?.versionNumber}
-            </span>
+
             <button 
               onClick={() => setCollabTarget({ id: activeDashboard?.id || '', type: 'DASHBOARD' })}
               className="flex items-center gap-1 hover:text-accent-indigo transition"
@@ -286,43 +291,39 @@ const DashboardOverview = () => {
         </div>
         
         <div className="flex items-center gap-2">
-          {/* Analysis Group */}
-          <div className="flex items-center p-1 bg-surface rounded-xl border border-border-theme">
-            <button
-              onClick={toggleBenchmarkMode}
-              className={`font-medium py-2 px-4 rounded-2xl transition flex items-center gap-2 text-sm ${benchmarkMode ? 'bg-amber-500/20 text-accent-amber' : 'text-main hover:text-main hover:bg-white/[0.05]'}`}
-            >
-              {loadingBenchmarks ? <Loader2 size={16} className="animate-spin" /> : <BarChart2 size={16} />}
-              Benchmarks
-            </button>
-            <Link 
-              to="/dashboard/story"
-              className="font-medium py-2 px-4 rounded-2xl transition flex items-center gap-2 text-sm text-accent-purple hover:text-purple-300 hover:bg-white/[0.05]"
-            >
-              <Presentation size={16} />
-              Story
-            </Link>
-          </div>
-
-          {/* AI Tools Group */}
-          <div className="flex items-center p-1 bg-surface rounded-xl border border-border-theme">
-            <button
-              onClick={() => setIsCopilotOpen(!isCopilotOpen)}
-              className="font-medium py-2 px-4 rounded-2xl transition flex items-center gap-2 text-sm text-main hover:text-main hover:bg-white/[0.05]"
-            >
-              <Bot size={16} className="text-accent-indigo" /> Copilot
-            </button>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-accent-indigo hover:bg-accent-indigo text-white font-semibold py-2 px-4 rounded-2xl transition flex items-center gap-2 text-sm shadow-[0_0_15px_rgba(79,70,229,0.2)]"
-            >
-              <Sparkles size={16} /> Auto-Generate
-            </button>
-          </div>
+          {/* Action Outline Buttons */}
+          <button
+            onClick={toggleBenchmarkMode}
+            className={`font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm border ${benchmarkMode ? 'bg-accent-indigo text-white border-accent-indigo' : 'bg-transparent text-muted border-border-theme hover:text-main hover:bg-surface-hover'}`}
+          >
+            {loadingBenchmarks ? <Loader2 size={16} className="animate-spin" /> : <BarChart2 size={16} />}
+            Benchmarks
+          </button>
+          <Link 
+            to="/dashboard/story"
+            className="font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm text-muted bg-transparent border border-border-theme hover:text-main hover:bg-surface-hover"
+          >
+            <Presentation size={16} />
+            Data Story
+          </Link>
+          <button
+            onClick={() => setIsCopilotOpen(!isCopilotOpen)}
+            className="font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm text-muted bg-transparent border border-border-theme hover:text-main hover:bg-surface-hover"
+          >
+            <Bot size={16} className="text-accent-indigo" /> 
+            AI Summary
+          </button>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm text-muted bg-transparent border border-border-theme hover:text-main hover:bg-surface-hover"
+          >
+            <Sparkles size={16} /> 
+            Auto-Generate
+          </button>
 
           {/* Governance & Export (Ellipsis Menu) */}
           <div className="relative group">
-            <button className="bg-surface hover:bg-surface-hover text-main hover:text-main p-2.5 rounded-xl transition border border-border-theme flex items-center justify-center">
+            <button className="bg-surface hover:bg-surface-hover text-main hover:text-main py-2 px-3 rounded-xl transition border border-border-theme flex items-center justify-center h-full">
               <MoreHorizontal size={18} />
             </button>
             <div className="absolute right-0 mt-2 w-56 bg-surface border border-border-theme rounded-xl shadow-[0_4px_20px_rgba(79,70,229,0.15)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 flex flex-col overflow-hidden py-1">
@@ -359,7 +360,45 @@ const DashboardOverview = () => {
       </div>
 
       <div className="flex-1 flex gap-6 overflow-hidden pb-8">
-        <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
+        <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 flex flex-col gap-6">
+          
+          {/* KPI Cards Row */}
+          {kpis.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 shrink-0">
+              {kpis.slice(0, 4).map((kpi) => {
+                const target = kpi.targetValue || 1;
+                const percent = Math.min(Math.round((kpi.actualValue / target) * 100), 100);
+                let colorClass = "text-emerald-500 bg-emerald-500";
+                if (kpi.healthStatus === 'YELLOW') colorClass = "text-amber-500 bg-amber-500";
+                if (kpi.healthStatus === 'RED') colorClass = "text-red-500 bg-red-500";
+
+                return (
+                  <div key={kpi.id} className="bg-surface rounded-2xl border border-border-theme p-5 flex flex-col justify-between h-[140px] relative overflow-hidden group hover:border-accent-indigo/50 transition-colors">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-sm font-medium text-muted truncate pr-4">{kpi.name}</h3>
+                      <div className={`w-2 h-2 rounded-full shrink-0 ${colorClass.split(' ')[1]} shadow-[0_0_8px_currentColor]`} />
+                    </div>
+                    <div>
+                      <div className="text-3xl font-display font-bold text-main mb-1">
+                        {new Intl.NumberFormat('en-IN', { notation: "compact", maximumFractionDigits: 1 }).format(kpi.actualValue)}
+                      </div>
+                      <div className="text-xs text-muted font-mono">
+                        target {new Intl.NumberFormat('en-IN', { notation: "compact", maximumFractionDigits: 1 }).format(target)}
+                      </div>
+                    </div>
+                    {/* Progress Bar Line */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-surface-hover">
+                      <div className={`h-full ${colorClass.split(' ')[1]}`} style={{ width: `${percent}%` }} />
+                    </div>
+                    <div className={`absolute bottom-3 right-5 text-xs font-mono font-bold ${colorClass.split(' ')[0]}`}>
+                      {percent}% of target
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           {widgets.length === 0 ? (
             <div className="bento-card border-dashed flex flex-col items-center justify-center p-16 mt-8">
               <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mb-4">

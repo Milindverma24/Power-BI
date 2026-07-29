@@ -35,6 +35,13 @@ public class AuthenticationController {
         return ResponseEntity.ok(service.authenticate(request));
     }
 
+    @PostMapping("/google")
+    public ResponseEntity<AuthenticationResponse> authenticateWithGoogle(
+            @RequestBody com.aibi.dto.GoogleAuthRequest request
+    ) {
+        return ResponseEntity.ok(service.authenticateWithGoogle(request));
+    }
+
     @PostMapping("/refresh")
     public ResponseEntity<AuthenticationResponse> refreshToken(@RequestBody Map<String, String> request) {
         String refreshToken = request.get("refreshToken");

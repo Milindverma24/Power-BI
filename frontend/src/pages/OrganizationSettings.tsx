@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Building2, Users, Mail, Shield, Loader2 } from 'lucide-react';
+import { Building2, Users, Mail, Shield, Loader2, UserPlus } from 'lucide-react';
+import { InviteEmployeeModal } from '../components/InviteEmployeeModal';
 
 interface Organization {
   id: string;
@@ -21,13 +22,23 @@ const OrganizationSettings = () => {
   const [org, setOrg] = useState<Organization | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+
+  const fetchEmployees = async () => {
+    try {
+      const empRes = await axios.get('/api/v1/organizations/employees');
+      setEmployees(empRes.data);
+    } catch (err) {
+      console.error("Failed to fetch employees", err);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [orgRes, empRes] = await Promise.all([
-          axios.get('http://localhost:8080/api/v1/organizations/me'),
-          axios.get('http://localhost:8080/api/v1/organizations/employees')
+          axios.get('/api/v1/organizations/me'),
+          axios.get('/api/v1/organizations/employees')
         ]);
         setOrg(orgRes.data);
         setEmployees(empRes.data);
@@ -68,9 +79,18 @@ const OrganizationSettings = () => {
         </p>
       </div>
 
-      <h2 className="text-2xl font-semibold text-main mb-6 flex items-center gap-2">
-        <Users className="text-accent-primary" /> Employees
-      </h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-semibold text-main flex items-center gap-2">
+          <Users className="text-accent-primary" /> Employees
+        </h2>
+        <button
+          onClick={() => setShowInviteModal(true)}
+          className="bg-accent-primary hover:bg-accent-primary-hover text-white px-4 py-2 rounded-xl font-medium transition-colors flex items-center gap-2 shadow-lg shadow-accent-primary/20"
+        >
+          <UserPlus size={18} />
+          Invite Employee
+        </button>
+      </div>
 
       <div className="glass rounded-2xl overflow-hidden">
         <table className="w-full text-left border-collapse">
@@ -114,6 +134,15 @@ const OrganizationSettings = () => {
           </tbody>
         </table>
       </div>
+
+      <InviteEmployeeModal 
+        isOpen={showInviteModal} 
+        onClose={() => setShowInviteModal(false)}
+        onSuccess={() => {
+          fetchEmployees();
+          setShowInviteModal(false);
+        }}
+      />
     </div>
   );
 };

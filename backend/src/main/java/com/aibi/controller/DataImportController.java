@@ -29,6 +29,7 @@ public class DataImportController {
     private final AiUnderstandingService aiUnderstandingService;
     private final DatabaseIngestionService databaseIngestionService;
     private final ExternalImportService externalImportService;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     @PostMapping("/upload")
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file, @AuthenticationPrincipal User currentUser) {
@@ -185,5 +186,26 @@ public class DataImportController {
             return ResponseEntity.ok(List.of());
         }
         return ResponseEntity.ok(dataSourceRepository.findByOrganizationIdOrderByCreatedAtDesc(currentUser.getOrganization().getId()));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteDataSource(@PathVariable java.util.UUID id, @AuthenticationPrincipal User currentUser) {
+        if (currentUser.getOrganization() == null) {
+            return ResponseEntity.badRequest().body("No organization");
+        }
+        
+        DataSource dataSource = dataSourceRepository.findById(id).orElse(null);
+        if (dataSource == null || !dataSource.getOrganization().getId().equals(currentUser.getOrganization().getId())) {
+            return ResponseEntity.status(403).body("Not found or access denied.");
+        }
+        
+        try {
+            String tableName = "ds_" + dataSource.getId().toString().replace("-", "_");
+            jdbcTemplate.execute("DROP TABLE IF EXISTS " + tableName + " CASCADE");
+            dataSourceRepository.delete(dataSource);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Failed to delete dataset: " + e.getMessage());
+        }
     }
 }

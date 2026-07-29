@@ -25,7 +25,7 @@ const CopilotSidebar = ({ onApplyFilter, isOpen, onClose }: CopilotSidebarProps)
     setIsLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:8080/api/v1/copilot/filter', { query: userMessage });
+      const res = await axios.post('/api/v1/copilot/filter', { query: userMessage });
       // Controller returns: { "sqlModifier": "...", "message": "..." }
       
       let parsed = res.data;

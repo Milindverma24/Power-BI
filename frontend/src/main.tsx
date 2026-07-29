@@ -3,6 +3,9 @@ import type { ErrorInfo, ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import axios from 'axios'
+
+axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 class ErrorBoundary extends Component<{children: ReactNode}, {hasError: boolean, error: Error | null}> {
   constructor(props: {children: ReactNode}) {
@@ -31,10 +34,14 @@ class ErrorBoundary extends Component<{children: ReactNode}, {hasError: boolean,
   }
 }
 
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <App />
+      <GoogleOAuthProvider clientId="153975858529-50u641q6mbbhob6vipcbvicjd9qjvdh1.apps.googleusercontent.com">
+        <App />
+      </GoogleOAuthProvider>
     </ErrorBoundary>
   </StrictMode>,
 )

@@ -2,15 +2,18 @@ package com.aibi.service;
 
 import com.aibi.domain.DataSource;
 import dev.langchain4j.model.chat.ChatLanguageModel;
-import dev.langchain4j.model.ollama.OllamaChatModel;
+import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 
 @Service
 @Slf4j
@@ -21,54 +24,72 @@ public class AiSqlService {
     private final PredictiveAnalyticsService predictiveAnalyticsService;
 
     public AiSqlService(JdbcTemplate jdbcTemplate, 
-                        @Value("${langchain4j.ollama.chat.model.base-url}") String baseUrl,
-                        @Value("${langchain4j.ollama.chat.model.model-name}") String modelName,
+                        @Value("${langchain4j.gemini.chat.model.api-key}") String apiKey,
+                        @Value("${langchain4j.gemini.chat.model.model-name:gemini-1.5-flash}") String modelName,
                         PredictiveAnalyticsService predictiveAnalyticsService) {
         this.jdbcTemplate = jdbcTemplate;
         this.predictiveAnalyticsService = predictiveAnalyticsService;
-        this.chatModel = OllamaChatModel.builder()
-                .baseUrl(baseUrl)
+        this.chatModel = GoogleAiGeminiChatModel.builder()
+                .apiKey(apiKey)
                 .modelName(modelName)
                 .temperature(0.0) // Low temperature for factual SQL generation
                 .build();
     }
 
     public Object chatWithData(DataSource dataSource, String userMessage) {
-        // MOCKED to prevent high system load from local LLM and ensure perfect JSON for test drive
         String tableName = "ds_" + dataSource.getId().toString().replace("-", "_");
-        
-        if (userMessage.toLowerCase().contains("bar chart") || userMessage.toLowerCase().contains("units_sold")) {
-            List<Map<String, Object>> mockData = List.of(
-                Map.of("product_category", "Electronics", "total_units", 150),
-                Map.of("product_category", "Hardware", "total_units", 12),
-                Map.of("product_category", "Software", "total_units", 13),
-                Map.of("product_category", "Robotics", "total_units", 2)
-            );
+
+        try {
+            List<Map<String, Object>> schemaRows = jdbcTemplate.queryForList("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = ?", tableName);
+            String schema = schemaRows.toString();
+
+            String prompt = "You are a data analyst AI. The user asks: '" + userMessage + "'.\n" +
+                "The data is in a PostgreSQL table named '" + tableName + "' with the following schema: " + schema + "\n" +
+                "Generate a PostgreSQL query to answer the user's question.\n" +
+                "Return EXACTLY a raw JSON object with these keys:\n" +
+                "- \"sqlQuery\": The SQL query as a string. Ensure any aliases used are strictly lowercase.\n" +
+                "- \"answer\": A short natural language answer/explanation.\n" +
+                "- \"chartConfig\": VERY IMPORTANT: If the user asks for a chart/graph, OR if the query returns aggregated data (like sums/counts grouped by a category) that can be visualized, you MUST provide this object with \"type\" (must be \"bar\", \"line\", or \"pie\"), \"xAxisKey\" (the exact lowercase column name for the x-axis), and \"yAxisKey\" (the exact lowercase column name for the y-axis). Otherwise, set it to null.\n" +
+                "Do not include any markdown formatting like ```json.";
+
+            String jsonResponse = chatModel.generate(prompt).trim();
+            log.info("LLM Response: {}", jsonResponse);
             
-            return Map.of(
-                "answer", "Here is the bar chart showing total units sold by product category based on your data.",
-                "requiresForecast", false,
-                "requiresSimulation", false,
-                "chartConfig", Map.of("type", "bar", "xAxisKey", "product_category", "yAxisKey", "total_units"),
-                "data", mockData,
-                "sqlQuery", "SELECT product_category, SUM(CAST(units_sold AS NUMERIC)) as total_units FROM " + tableName + " GROUP BY product_category"
-            );
-        } else if (userMessage.toLowerCase().contains("summarize") || userMessage.toLowerCase().contains("root cause")) {
-             return Map.of(
-                "answer", "Based on the Root Cause Analysis, the drop in Hardware profit margin was traced directly to a sudden spike in component shipping costs from our primary supplier, combined with a 15% discount promotion that overlapped.",
-                "requiresForecast", false,
-                "requiresSimulation", false,
-                "chartConfig", null,
-                "data", List.of(),
-                "sqlQuery", "SELECT * FROM " + tableName + " LIMIT 5"
-            );
+            int start = jsonResponse.indexOf('{');
+            int end = jsonResponse.lastIndexOf('}');
+            if (start != -1 && end != -1) {
+                jsonResponse = jsonResponse.substring(start, end + 1);
+            }
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(jsonResponse);
+            String sqlQuery = root.get("sqlQuery").asText();
+            String answer = root.get("answer").asText();
+
+            log.info("Executing SQL: {}", sqlQuery);
+            List<Map<String, Object>> data = jdbcTemplate.queryForList(sqlQuery);
+            log.info("Query returned {} rows", data.size());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("answer", answer);
+            response.put("sqlQuery", sqlQuery);
+            response.put("data", data);
+
+            if (root.has("chartConfig") && !root.get("chartConfig").isNull()) {
+                log.info("Chart config found in LLM response");
+                response.put("chartConfig", mapper.convertValue(root.get("chartConfig"), Map.class));
+            } else {
+                log.info("No chart config found in LLM response");
+            }
+
+            return response;
+        } catch (Exception e) {
+            log.error("AI chat error", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("answer", "I'm sorry, I encountered an error answering your question. Please try rephrasing it.");
+            errorResponse.put("sqlQuery", "N/A");
+            errorResponse.put("data", List.of());
+            return errorResponse;
         }
-        
-        return Map.of(
-            "answer", "I am currently running in Mock Mode for the test drive. Please ask about 'units_sold' to see a chart, or ask me to 'summarize root cause'.",
-            "chartConfig", null,
-            "data", List.of(),
-            "sqlQuery", "SELECT * FROM " + tableName
-        );
     }
 }

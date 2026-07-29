@@ -1,16 +1,16 @@
 package com.aibi.controller;
 
-import com.aibi.domain.ActionItem;
-import com.aibi.domain.ActionStatus;
-import com.aibi.domain.Comment;
-import com.aibi.domain.CommentTargetType;
-import com.aibi.domain.User;
+import com.aibi.domain.*;
+import com.aibi.repository.DashboardVersionRepository;
+import com.aibi.repository.DecisionRepository;
 import com.aibi.service.CollaborationService;
+import dev.langchain4j.model.chat.ChatLanguageModel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,6 +21,9 @@ import java.util.UUID;
 public class CollaborationController {
 
     private final CollaborationService collaborationService;
+    private final DashboardVersionRepository versionRepository;
+    private final DecisionRepository decisionRepository;
+    private final ChatLanguageModel chatLanguageModel;
 
     @PostMapping("/comments")
     public ResponseEntity<Comment> addComment(
@@ -74,5 +77,45 @@ public class CollaborationController {
         
         ActionStatus status = ActionStatus.valueOf(request.get("status"));
         return ResponseEntity.ok(collaborationService.updateActionItemStatus(actionId, status));
+    }
+
+    @GetMapping("/versions")
+    public ResponseEntity<List<DashboardVersion>> getVersions(@AuthenticationPrincipal User currentUser) {
+        if (currentUser.getOrganization() == null) return ResponseEntity.badRequest().build();
+        List<DashboardVersion> versions = versionRepository.findAll().stream()
+            .filter(v -> v.getDashboard() != null && v.getDashboard().getOrganization().getId().equals(currentUser.getOrganization().getId()))
+            .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+            .toList();
+        return ResponseEntity.ok(versions);
+    }
+
+    @GetMapping("/decisions")
+    public ResponseEntity<List<Decision>> getDecisions(@AuthenticationPrincipal User currentUser) {
+        if (currentUser.getOrganization() == null) return ResponseEntity.badRequest().build();
+        List<Decision> decisions = decisionRepository.findByOrganizationIdOrderByCreatedAtDesc(currentUser.getOrganization().getId());
+        return ResponseEntity.ok(decisions);
+    }
+
+    @PostMapping("/decisions")
+    public ResponseEntity<Decision> logDecision(@AuthenticationPrincipal User currentUser, @RequestBody Decision decision) {
+        if (currentUser.getOrganization() == null) return ResponseEntity.badRequest().build();
+        
+        decision.setOrganization(currentUser.getOrganization());
+        decision.setCreatedBy(currentUser);
+        decision.setEvaluationDate(LocalDateTime.now().plusDays(14)); 
+        
+        if (decision.getStatus() == null) {
+            decision.setStatus(DecisionStatus.PENDING_EVALUATION);
+        }
+
+        try {
+            String prompt = "You are a business AI evaluating a decision. Decision: " + decision.getRationale() + ". Provide a very short (2-5 words) estimated outcome (e.g. '+12% Lead Velocity').";
+            String estimatedOutcome = chatLanguageModel.generate(prompt);
+            decision.setExpectedOutcome(estimatedOutcome);
+        } catch (Exception e) {
+            decision.setExpectedOutcome("Pending AI measurement");
+        }
+
+        return ResponseEntity.ok(decisionRepository.save(decision));
     }
 }

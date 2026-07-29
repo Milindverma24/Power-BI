@@ -2,7 +2,7 @@ package com.aibi.service;
 
 import com.aibi.domain.DashboardWidget;
 import dev.langchain4j.model.chat.ChatLanguageModel;
-import dev.langchain4j.model.ollama.OllamaChatModel;
+import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,10 +17,10 @@ public class BenchmarkService {
 
     private final ChatLanguageModel chatModel;
 
-    public BenchmarkService(@Value("${langchain4j.ollama.chat.model.base-url}") String baseUrl,
-                            @Value("${langchain4j.ollama.chat.model.model-name}") String modelName) {
-        this.chatModel = OllamaChatModel.builder()
-                .baseUrl(baseUrl)
+    public BenchmarkService(@Value("${langchain4j.gemini.chat.model.api-key}") String apiKey,
+                            @Value("${langchain4j.gemini.chat.model.model-name:gemini-1.5-flash}") String modelName) {
+        this.chatModel = GoogleAiGeminiChatModel.builder()
+                .apiKey(apiKey)
                 .modelName(modelName)
                 .temperature(0.2) // Low temperature for consistent mock data
                 .build();

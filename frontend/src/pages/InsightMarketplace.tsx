@@ -33,8 +33,8 @@ const InsightMarketplace = () => {
   const fetchPrompts = async () => {
     try {
       const url = category && category !== 'All' 
-        ? `http://localhost:8080/api/v1/marketplace/prompts?category=${category}`
-        : 'http://localhost:8080/api/v1/marketplace/prompts';
+        ? `/api/v1/marketplace/prompts?category=${category}`
+        : '/api/v1/marketplace/prompts';
       const res = await axios.get(url);
       setPrompts(res.data);
     } catch (err) {
@@ -45,7 +45,7 @@ const InsightMarketplace = () => {
   const handleShare = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:8080/api/v1/marketplace/prompts', newPrompt);
+      await axios.post('/api/v1/marketplace/prompts', newPrompt);
       setIsSharing(false);
       setNewPrompt({ title: '', description: '', promptText: '', category: 'Sales' });
       fetchPrompts();
@@ -56,7 +56,7 @@ const InsightMarketplace = () => {
 
   const handleUpvote = async (id: string) => {
     try {
-      await axios.post(`http://localhost:8080/api/v1/marketplace/prompts/${id}/upvote`);
+      await axios.post(`/api/v1/marketplace/prompts/${id}/upvote`);
       fetchPrompts();
     } catch (err) {
       console.error("Failed to upvote", err);

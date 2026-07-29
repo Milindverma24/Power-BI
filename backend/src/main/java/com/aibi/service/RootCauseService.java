@@ -2,7 +2,7 @@ package com.aibi.service;
 
 import com.aibi.domain.DataSource;
 import dev.langchain4j.model.chat.ChatLanguageModel;
-import dev.langchain4j.model.ollama.OllamaChatModel;
+import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,11 +27,11 @@ public class RootCauseService {
         private List<RootCauseNode> children;
     }
 
-    public RootCauseService(@Value("${langchain4j.ollama.chat.model.base-url}") String baseUrl,
-                            @Value("${langchain4j.ollama.chat.model.model-name}") String modelName,
+    public RootCauseService(@Value("${langchain4j.gemini.chat.model.api-key}") String apiKey,
+                            @Value("${langchain4j.gemini.chat.model.model-name:gemini-1.5-flash}") String modelName,
                             JdbcTemplate jdbcTemplate) {
-        this.chatModel = OllamaChatModel.builder()
-                .baseUrl(baseUrl)
+        this.chatModel = GoogleAiGeminiChatModel.builder()
+                .apiKey(apiKey)
                 .modelName(modelName)
                 .temperature(0.1) // Low temperature for consistent tree structure
                 .build();

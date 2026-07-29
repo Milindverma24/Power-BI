@@ -4,7 +4,7 @@ import com.aibi.domain.DataSource;
 import com.aibi.domain.KpiDefinition;
 import com.aibi.repository.KpiRepository;
 import dev.langchain4j.model.chat.ChatLanguageModel;
-import dev.langchain4j.model.ollama.OllamaChatModel;
+import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,12 +26,12 @@ public class KpiService {
 
     public KpiService(KpiRepository kpiRepository,
                       JdbcTemplate jdbcTemplate,
-                      @Value("${langchain4j.ollama.chat.model.base-url}") String baseUrl,
-                      @Value("${langchain4j.ollama.chat.model.model-name}") String modelName) {
+                      @Value("${langchain4j.gemini.chat.model.api-key}") String apiKey,
+                      @Value("${langchain4j.gemini.chat.model.model-name:gemini-1.5-flash}") String modelName) {
         this.kpiRepository = kpiRepository;
         this.jdbcTemplate = jdbcTemplate;
-        this.chatModel = OllamaChatModel.builder()
-                .baseUrl(baseUrl)
+        this.chatModel = GoogleAiGeminiChatModel.builder()
+                .apiKey(apiKey)
                 .modelName(modelName)
                 .temperature(0.0)
                 .build();
@@ -57,7 +57,30 @@ public class KpiService {
             tableName, columnMetadata, kpiDefinition.getNlQuery(), tableName
         );
 
-        String sqlQuery = chatModel.generate(sqlPrompt).trim();
+        String sqlQuery = null;
+        int maxRetries = 3;
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                sqlQuery = chatModel.generate(sqlPrompt).trim();
+                break;
+            } catch (Exception ex) {
+                if (attempt == maxRetries) {
+                    throw new RuntimeException("Failed to create KPI: " + ex.getMessage(), ex);
+                }
+                long sleepMs = 36000; // Default to 36 seconds
+                String msg = ex.getMessage();
+                if (msg != null && msg.contains("Please retry in ")) {
+                    try {
+                        String timeStr = msg.substring(msg.indexOf("Please retry in ") + 16, msg.indexOf("s.", msg.indexOf("Please retry in ")));
+                        sleepMs = (long) (Double.parseDouble(timeStr) * 1000) + 1000;
+                    } catch (Exception parseEx) {
+                        // fallback to 36000
+                    }
+                }
+                log.warn("Gemini API call failed during KPI creation on attempt {}/{}, retrying after {}ms to handle rate limits...", attempt, maxRetries, sleepMs);
+                try { Thread.sleep(sleepMs); } catch (InterruptedException ie) {}
+            }
+        }
         
         if (sqlQuery.startsWith("```sql")) {
             sqlQuery = sqlQuery.replace("```sql", "").replace("```", "").trim();
@@ -99,7 +122,31 @@ public class KpiService {
                 kpi.getName(), kpi.getNlQuery(), kpi.getTargetValue().toString(), actualValue.toString()
             );
 
-            String jsonResponse = chatModel.generate(evalPrompt).trim();
+            String jsonResponse = null;
+            int maxRetries = 3;
+            for (int attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    jsonResponse = chatModel.generate(evalPrompt).trim();
+                    break;
+                } catch (Exception ex) {
+                    if (attempt == maxRetries) {
+                        throw ex;
+                    }
+                    long sleepMs = 36000; // Default to 36 seconds
+                    String msg = ex.getMessage();
+                    if (msg != null && msg.contains("Please retry in ")) {
+                        try {
+                            String timeStr = msg.substring(msg.indexOf("Please retry in ") + 16, msg.indexOf("s.", msg.indexOf("Please retry in ")));
+                            sleepMs = (long) (Double.parseDouble(timeStr) * 1000) + 1000;
+                        } catch (Exception parseEx) {
+                            // fallback to 36000
+                        }
+                    }
+                    log.warn("Gemini API call failed on attempt {}/{}, retrying after {}ms to handle rate limits...", attempt, maxRetries, sleepMs);
+                    try { Thread.sleep(sleepMs); } catch (InterruptedException ie) {}
+                }
+            }
+
             int start = jsonResponse.indexOf('{');
             int end = jsonResponse.lastIndexOf('}');
             if (start != -1 && end != -1) {

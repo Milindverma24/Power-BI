@@ -42,7 +42,7 @@ const ResetPassword = () => {
     setError('');
     
     try {
-      await axios.post('http://localhost:8080/api/v1/auth/reset-password', { token, newPassword });
+      await axios.post('/api/v1/auth/reset-password', { token, newPassword });
       setSuccess(true);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to reset password. The link may have expired.');

@@ -1,4 +1,4 @@
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, AreaChart, Area } from 'recharts';
 
 interface ChartConfig {
   type: string;
@@ -14,7 +14,7 @@ interface ChartRendererProps {
   benchmarkData?: any[];
 }
 
-const COLORS = ['#c0ff00', '#93ce40', '#76af24', '#ffffff', '#a855f7', '#6366f1'];
+const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444', '#14b8a6'];
 
 const ChartRenderer = ({ config, data, benchmarkData }: ChartRendererProps) => {
   if (!data || data.length === 0) return null;
@@ -46,17 +46,17 @@ const ChartRenderer = ({ config, data, benchmarkData }: ChartRendererProps) => {
       case 'bar':
         return (
           <BarChart data={cleanData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-            <XAxis dataKey={config.xAxisKey} stroke="#94a3b8" />
-            <YAxis stroke="#94a3b8" />
-            <Tooltip contentStyle={{ backgroundColor: '#111111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f8fafc', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }} />
-            <Legend />
-            <Bar dataKey={config.yAxisKey} fill="#c0ff00" radius={[6, 6, 0, 0]} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff0a" vertical={false} />
+            <XAxis dataKey={config.xAxisKey} stroke="#64748b" tick={{ fill: '#64748b', fontSize: 12, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} />
+            <YAxis stroke="#64748b" tick={{ fill: '#64748b', fontSize: 12, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} />
+            <Tooltip contentStyle={{ backgroundColor: '#101828', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', color: '#f8fafc', boxShadow: '0 4px 20px rgba(0,0,0,0.5)', fontFamily: 'JetBrains Mono', fontSize: '13px' }} itemStyle={{ color: '#f8fafc' }} />
+            <Legend wrapperStyle={{ fontFamily: 'DM Sans', fontSize: '13px' }} />
+            <Bar dataKey={config.yAxisKey} fill="#3b82f6" radius={[4, 4, 0, 0]} />
             {config.yAxisForecastKey && (
-              <Bar dataKey={config.yAxisForecastKey} fill="#c0ff00" fillOpacity={0.4} radius={[6, 6, 0, 0]} name="Forecast" />
+              <Bar dataKey={config.yAxisForecastKey} fill="#3b82f6" fillOpacity={0.4} radius={[4, 4, 0, 0]} name="Forecast" />
             )}
             {config.yAxisSimulationKey && (
-              <Bar dataKey={config.yAxisSimulationKey} fill="#a855f7" radius={[6, 6, 0, 0]} name="Simulated Scenario" />
+              <Bar dataKey={config.yAxisSimulationKey} fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Simulated Scenario" />
             )}
             {benchmarkData && benchmarkData.length > 0 && (
               <Line type="monotone" dataKey="Benchmark" stroke="#ffffff" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4 }} name="Industry Benchmark" />
@@ -65,41 +65,45 @@ const ChartRenderer = ({ config, data, benchmarkData }: ChartRendererProps) => {
         );
       case 'line':
         return (
-          <LineChart data={cleanData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-            <XAxis dataKey={config.xAxisKey} stroke="#94a3b8" />
-            <YAxis stroke="#94a3b8" />
-            <Tooltip contentStyle={{ backgroundColor: '#111111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f8fafc', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }} />
-            <Legend />
-            <Line type="monotone" dataKey={config.yAxisKey} stroke="#c0ff00" strokeWidth={3} dot={{ r: 4, fill: '#0a0a0a' }} activeDot={{ r: 8, fill: '#c0ff00' }} />
+          <AreaChart data={cleanData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <defs>
+              <linearGradient id="colorY" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
+                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff0a" vertical={false} />
+            <XAxis dataKey={config.xAxisKey} stroke="#64748b" tick={{ fill: '#64748b', fontSize: 12, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} />
+            <YAxis stroke="#64748b" tick={{ fill: '#64748b', fontSize: 12, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} />
+            <Tooltip contentStyle={{ backgroundColor: '#101828', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', color: '#f8fafc', boxShadow: '0 4px 20px rgba(0,0,0,0.5)', fontFamily: 'JetBrains Mono', fontSize: '13px' }} itemStyle={{ color: '#f8fafc' }} />
+            <Legend wrapperStyle={{ fontFamily: 'DM Sans', fontSize: '13px' }} />
+            <Area type="monotone" dataKey={config.yAxisKey} stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorY)" activeDot={{ r: 6, fill: '#3b82f6', stroke: '#101828', strokeWidth: 2 }} />
             {config.yAxisForecastKey && (
-              <Line type="monotone" dataKey={config.yAxisForecastKey} stroke="#93ce40" strokeWidth={3} strokeDasharray="5 5" dot={{ r: 4, fill: '#0a0a0a' }} activeDot={{ r: 8 }} name="Forecast" />
+              <Line type="monotone" dataKey={config.yAxisForecastKey} stroke="#8b5cf6" strokeWidth={3} strokeDasharray="5 5" dot={false} activeDot={{ r: 6 }} name="Forecast" />
             )}
             {config.yAxisSimulationKey && (
-              <Line type="monotone" dataKey={config.yAxisSimulationKey} stroke="#a855f7" strokeWidth={3} strokeDasharray="5 5" dot={{ r: 4, fill: '#0a0a0a' }} activeDot={{ r: 8 }} name="Simulated Scenario" />
+              <Line type="monotone" dataKey={config.yAxisSimulationKey} stroke="#10b981" strokeWidth={3} strokeDasharray="5 5" dot={false} activeDot={{ r: 6 }} name="Simulated Scenario" />
             )}
             {benchmarkData && benchmarkData.length > 0 && (
-              <Line type="monotone" dataKey="Benchmark" stroke="#ffffff" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4, fill: '#0a0a0a' }} activeDot={{ r: 8 }} name="Industry Benchmark" />
+              <Line type="monotone" dataKey="Benchmark" stroke="#ffffff" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={{ r: 6 }} name="Industry Benchmark" />
             )}
-          </LineChart>
+          </AreaChart>
         );
       case 'pie':
         return (
           <PieChart>
-            <Tooltip contentStyle={{ backgroundColor: '#111111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f8fafc', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }} />
-            <Legend />
+            <Tooltip contentStyle={{ backgroundColor: '#101828', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', color: '#f8fafc', boxShadow: '0 4px 20px rgba(0,0,0,0.5)', fontFamily: 'JetBrains Mono', fontSize: '13px' }} itemStyle={{ color: '#f8fafc' }} />
+            <Legend wrapperStyle={{ fontFamily: 'DM Sans', fontSize: '13px' }} />
             <Pie
               data={cleanData}
               cx="50%"
               cy="50%"
-              labelLine={false}
-              label={({ name, percent }) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
-              outerRadius={90}
-              fill="#c0ff00"
+              innerRadius={70}
+              outerRadius={100}
+              paddingAngle={2}
               dataKey={config.yAxisKey}
               nameKey={config.xAxisKey}
-              stroke="#0a0a0a"
-              strokeWidth={2}
+              stroke="none"
             >
               {cleanData.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -110,20 +114,20 @@ const ChartRenderer = ({ config, data, benchmarkData }: ChartRendererProps) => {
       default:
         return (
           <BarChart data={cleanData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-            <XAxis dataKey={config.xAxisKey} stroke="#94a3b8" />
-            <YAxis stroke="#94a3b8" />
-            <Tooltip contentStyle={{ backgroundColor: '#111111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f8fafc', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }} />
-            <Legend />
-            <Bar dataKey={config.yAxisKey} fill="#c0ff00" radius={[6, 6, 0, 0]} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff0a" vertical={false} />
+            <XAxis dataKey={config.xAxisKey} stroke="#64748b" tick={{ fill: '#64748b', fontSize: 12, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} />
+            <YAxis stroke="#64748b" tick={{ fill: '#64748b', fontSize: 12, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} />
+            <Tooltip contentStyle={{ backgroundColor: '#101828', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', color: '#f8fafc', boxShadow: '0 4px 20px rgba(0,0,0,0.5)', fontFamily: 'JetBrains Mono', fontSize: '13px' }} itemStyle={{ color: '#f8fafc' }} />
+            <Legend wrapperStyle={{ fontFamily: 'DM Sans', fontSize: '13px' }} />
+            <Bar dataKey={config.yAxisKey} fill="#3b82f6" radius={[4, 4, 0, 0]} />
             {config.yAxisForecastKey && (
-              <Bar dataKey={config.yAxisForecastKey} fill="#c0ff00" fillOpacity={0.4} radius={[6, 6, 0, 0]} name="Forecast" />
+              <Bar dataKey={config.yAxisForecastKey} fill="#3b82f6" fillOpacity={0.4} radius={[4, 4, 0, 0]} name="Forecast" />
             )}
             {config.yAxisSimulationKey && (
-              <Bar dataKey={config.yAxisSimulationKey} fill="#a855f7" radius={[6, 6, 0, 0]} name="Simulated Scenario" />
+              <Bar dataKey={config.yAxisSimulationKey} fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Simulated Scenario" />
             )}
             {benchmarkData && benchmarkData.length > 0 && (
-              <Line type="monotone" dataKey="Benchmark" stroke="#ffffff" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4 }} name="Industry Benchmark" />
+              <Line type="monotone" dataKey="Benchmark" stroke="#ffffff" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={{ r: 6 }} name="Industry Benchmark" />
             )}
           </BarChart>
         );

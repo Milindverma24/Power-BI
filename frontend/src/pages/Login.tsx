@@ -20,7 +20,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8080/api/v1/auth/authenticate', {
+      const response = await axios.post('/api/v1/auth/authenticate', {
         email,
         password,
       });
@@ -126,7 +126,7 @@ const Login = () => {
             
             <button
               type="button"
-              onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}
+              onClick={() => window.location.href = '/oauth2/authorization/google'}
               className="w-full bg-white hover:bg-gray-100 text-slate-900 font-semibold py-3 px-4 rounded-xl transition-all flex items-center justify-center space-x-2"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">

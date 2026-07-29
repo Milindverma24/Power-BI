@@ -31,6 +31,14 @@ if (initialToken) {
   axios.defaults.headers.common['Authorization'] = `Bearer ${initialToken}`;
 }
 
+const decodeJwt = (token: string) => {
+  try {
+    return JSON.parse(atob(token.split('.')[1]));
+  } catch (e) {
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(initialToken);
   const [refreshToken, setRefreshToken] = useState<string | null>(localStorage.getItem('refreshToken'));
@@ -38,7 +46,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (token) {
-      setUser({ id: '1', email: 'user@example.com', firstName: 'Test', lastName: 'User', role: 'ORG_ADMIN' });
+      const decoded = decodeJwt(token);
+      if (decoded) {
+        setUser({ 
+          id: decoded.id || '1', 
+          email: decoded.sub, 
+          firstName: decoded.firstName || 'User', 
+          lastName: decoded.lastName || '', 
+          role: decoded.role || 'USER',
+          organization: decoded.organizationId ? { id: decoded.organizationId, name: decoded.organizationName || 'My Organization' } : undefined
+        });
+      }
     } else {
       setUser(null);
     }
@@ -53,7 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (error.response?.status === 401 && !originalRequest._retry && currentRefreshToken) {
           originalRequest._retry = true;
           try {
-            const res = await axios.post('http://localhost:8080/api/v1/auth/refresh', { refreshToken: currentRefreshToken });
+            const res = await axios.post('/api/v1/auth/refresh', { refreshToken: currentRefreshToken });
             const newToken = res.data.token;
             localStorage.setItem('token', newToken);
             setToken(newToken);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrainCircuit, LineChart } from 'lucide-react';
+import { Activity } from 'lucide-react';
 
 interface LogoProps {
   className?: string;
@@ -7,25 +7,17 @@ interface LogoProps {
 }
 
 const Logo: React.FC<LogoProps> = ({ className = '', size = 'md' }) => {
-  const iconSize = size === 'sm' ? 20 : size === 'md' ? 28 : size === 'lg' ? 40 : 56;
+  const iconSize = size === 'sm' ? 16 : size === 'md' ? 20 : size === 'lg' ? 24 : 32;
+  const textSize = size === 'sm' ? 'text-lg' : size === 'md' ? 'text-xl' : size === 'lg' ? 'text-2xl' : 'text-3xl';
+  const boxSize = size === 'sm' ? 'w-8 h-8' : size === 'md' ? 'w-10 h-10' : size === 'lg' ? 'w-12 h-12' : 'w-16 h-16';
   
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      <div className="flex items-center gap-3 bg-surface-hover px-4 py-2 rounded-2xl border border-border-theme shadow-sm shadow-black/5">
-        {/* AI - Intelligence Box */}
-        <div className="flex items-center gap-1.5">
-          <BrainCircuit size={iconSize} className="text-accent-indigo" strokeWidth={2} />
-          <span className={`font-black tracking-tighter text-accent-indigo ${size === 'sm' ? 'text-base' : size === 'md' ? 'text-xl' : size === 'lg' ? 'text-3xl' : 'text-4xl'} leading-none`}>AI</span>
-        </div>
-        
-        {/* Divider */}
-        <div className={`w-[2px] bg-border-theme rounded-full ${size === 'sm' ? 'h-4' : size === 'md' ? 'h-5' : size === 'lg' ? 'h-7' : 'h-10'}`} />
-        
-        {/* BI - Business Box */}
-        <div className="flex items-center gap-1.5">
-          <LineChart size={iconSize} className="text-emerald-500" strokeWidth={2} />
-          <span className={`font-black tracking-tighter text-emerald-500 ${size === 'sm' ? 'text-base' : size === 'md' ? 'text-xl' : size === 'lg' ? 'text-3xl' : 'text-4xl'} leading-none`}>BI</span>
-        </div>
+    <div className={`flex items-center gap-3 ${className}`}>
+      <div className={`${boxSize} rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20`}>
+        <Activity size={iconSize} className="text-white" strokeWidth={2.5} />
+      </div>
+      <div className="flex flex-col justify-center">
+        <span className={`font-display font-bold tracking-tight text-main ${textSize} leading-none`}>NeuralBI</span>
       </div>
     </div>
   );

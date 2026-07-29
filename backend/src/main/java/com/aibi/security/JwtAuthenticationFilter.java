@@ -39,10 +39,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         
         jwt = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(jwt);
         
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            try {
+        try {
+            userEmail = jwtService.extractUsername(jwt);
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
                 if (jwtService.isTokenValid(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -55,10 +55,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
-            } catch (org.springframework.security.core.userdetails.UsernameNotFoundException e) {
-                // User was deleted from the database, but the client still sent their old JWT token.
-                // We simply ignore the token and leave them unauthenticated.
             }
+        } catch (io.jsonwebtoken.JwtException e) {
+            // Token is invalid or expired. Ignore and leave user unauthenticated (will result in 401).
+        } catch (org.springframework.security.core.userdetails.UsernameNotFoundException e) {
+            // User was deleted from the database, but the client still sent their old JWT token.
+            // We simply ignore the token and leave them unauthenticated.
         }
         filterChain.doFilter(request, response);
     }

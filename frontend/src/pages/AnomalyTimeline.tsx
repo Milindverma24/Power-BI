@@ -28,7 +28,7 @@ const AnomalyTimeline = () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:8080/api/v1/alerts', {
+      const res = await axios.get('/api/v1/alerts', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAlerts(res.data);
@@ -42,7 +42,7 @@ const AnomalyTimeline = () => {
   const fetchDataSources = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:8080/api/v1/data-sources', {
+      const res = await axios.get('/api/v1/data-sources', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDataSources(res.data);
@@ -64,7 +64,7 @@ const AnomalyTimeline = () => {
     setIsScanning(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`http://localhost:8080/api/v1/alerts/scan/${selectedDataSource}`, {}, {
+      await axios.post(`/api/v1/alerts/scan/${selectedDataSource}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       await fetchAlerts();

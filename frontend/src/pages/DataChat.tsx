@@ -34,7 +34,7 @@ const DataChat = () => {
   useEffect(() => {
     const fetchSources = async () => {
       try {
-        const res = await axios.get('http://localhost:8080/api/v1/data-sources');
+        const res = await axios.get('/api/v1/data-sources');
         const readySources = res.data.filter((s: DataSource) => s.status === 'READY');
         setSources(readySources);
         if (readySources.length > 0) {
@@ -65,7 +65,7 @@ const DataChat = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:8080/api/v1/chat', {
+      const res = await axios.post('/api/v1/chat', {
         dataSourceId: selectedSource,
         message: userMessage
       });
@@ -92,7 +92,7 @@ const DataChat = () => {
     if (!title) return;
 
     try {
-      await axios.post('http://localhost:8080/api/v1/dashboard/widgets', {
+      await axios.post('/api/v1/dashboard/widgets', {
         dataSourceId: selectedSource,
         title,
         sqlQuery: msg.sqlQuery,
@@ -166,7 +166,7 @@ const DataChat = () => {
               
               <div className={`max-w-[80%] rounded-2xl p-4 ${
                 msg.role === 'user' 
-                  ? 'bg-accent-indigo text-main rounded-br-none' 
+                  ? 'bg-accent-indigo text-white rounded-br-none' 
                   : 'bg-surface-hover text-main rounded-bl-none border border-border-theme'
               }`}>
                 <div className="prose prose-invert max-w-none">
@@ -221,7 +221,7 @@ const DataChat = () => {
             <button 
               type="submit" 
               disabled={!input.trim() || loading}
-              className="absolute right-2 p-2 bg-accent-indigo text-main rounded-2xl disabled:opacity-50 hover:bg-accent-indigo transition-colors"
+              className="absolute right-2 p-2 bg-accent-indigo text-white rounded-2xl disabled:opacity-50 hover:bg-accent-indigo transition-colors"
             >
               <Send size={20} />
             </button>

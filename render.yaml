@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: aibi-backend
+    env: docker
+    dockerContext: backend
+    dockerfilePath: backend/Dockerfile
+    plan: free
+    envVars:
+      - key: DB_URL
+        fromDatabase:
+          name: aibi-db
+          property: connectionString
+      - key: DB_USER
+        fromDatabase:
+          name: aibi-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: aibi-db
+          property: password
+      - key: FRONTEND_URL
+        value: "https://aibi-frontend.onrender.com"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
+  - type: web
+    name: aibi-frontend
+    env: docker
+    dockerContext: frontend
+    dockerfilePath: frontend/Dockerfile
+    plan: free
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: "https://aibi-backend.onrender.com"
+
+databases:
+  - name: aibi-db
+    databaseName: aibi
+    user: aibi_user
+    plan: free

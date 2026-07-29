@@ -19,7 +19,7 @@ const ExplainabilityDrawer = ({ widgetId, isOpen, onClose }: ExplainabilityDrawe
         setIsLoading(true);
         setError('');
         try {
-          const res = await axios.get(`http://localhost:8080/api/v1/explain/${widgetId}`);
+          const res = await axios.get(`/api/v1/explain/${widgetId}`);
           setReport(res.data);
         } catch (err) {
           setError('Failed to load chart explanation.');

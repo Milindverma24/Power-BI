@@ -15,11 +15,14 @@ const DataStoryViewer = () => {
   useEffect(() => {
     const fetchStoryAndWidgets = async () => {
       try {
-        const storyRes = await axios.get('http://localhost:8080/api/v1/reports/story/web');
+        const token = localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+        
+        const storyRes = await axios.get('/api/v1/reports/story/web', { headers });
         const slidesData = storyRes.data;
         setSlides(slidesData);
 
-        const widgetsRes = await axios.get('http://localhost:8080/api/v1/dashboard/widgets');
+        const widgetsRes = await axios.get('/api/v1/dashboard/widgets', { headers });
         const widgetsMap: Record<string, any> = {};
         widgetsRes.data.forEach((w: any) => {
           widgetsMap[w.id] = { config: JSON.parse(w.chartConfig), data: w.cachedData ? JSON.parse(w.cachedData) : [] };

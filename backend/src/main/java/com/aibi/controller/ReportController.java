@@ -11,6 +11,14 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.aibi.domain.User;
+import com.aibi.model.Report;
+import com.aibi.repository.ReportRepository;
+import jakarta.annotation.PostConstruct;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/reports")
@@ -19,6 +27,38 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReportController {
 
     private final ReportService reportService;
+    private final ReportRepository reportRepository;
+
+    @GetMapping("/recent")
+    public ResponseEntity<List<Report>> getRecentReports(@AuthenticationPrincipal User currentUser) {
+        if (currentUser.getOrganization() == null) return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok(reportRepository.findByOrganizationIdAndScheduledFalseOrderByReportDateDesc(currentUser.getOrganization().getId()));
+    }
+
+    @GetMapping("/scheduled")
+    public ResponseEntity<List<Report>> getScheduledReports(@AuthenticationPrincipal User currentUser) {
+        if (currentUser.getOrganization() == null) return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok(reportRepository.findByOrganizationIdAndScheduledTrue(currentUser.getOrganization().getId()));
+    }
+
+    @PostMapping("/generate")
+    public ResponseEntity<Report> generateReport(@AuthenticationPrincipal User currentUser) {
+        if (currentUser.getOrganization() == null) return ResponseEntity.badRequest().build();
+        try {
+            Report report = reportService.generateDynamicReport(currentUser.getOrganization(), currentUser);
+            return ResponseEntity.ok(report);
+        } catch (Exception e) {
+            log.error("Failed to generate dynamic report", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PostConstruct
+    public void seedMockReports() {
+        // Skip mock seeding since we are using real data generation now.
+    }
+
+
 
     @GetMapping("/pdf")
     public ResponseEntity<byte[]> downloadPdfReport(@AuthenticationPrincipal User currentUser) {
