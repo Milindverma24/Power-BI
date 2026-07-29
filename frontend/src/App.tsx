@@ -235,6 +235,7 @@ const Dashboard = () => {
 };
 
 import AcceptInvite from './pages/AcceptInvite';
+import Landing from './pages/Landing';
 
 function App() {
   return (
@@ -242,7 +243,7 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/accept-invite" element={<AcceptInvite />} />
