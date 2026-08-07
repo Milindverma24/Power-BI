@@ -33,7 +33,7 @@ public class DatasetInsight {
     @Column(name = "suggested_kpis", columnDefinition = "TEXT")
     private String suggestedKpis;
 
-    @Column(name = "column_metadata", columnDefinition = "JSONB")
+    @Column(name = "column_metadata", columnDefinition = "TEXT")
     private String columnMetadata;
 
     @Column(name = "data_quality_score")

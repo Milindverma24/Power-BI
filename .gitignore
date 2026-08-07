@@ -48,5 +48,6 @@ dist-ssr/
 # Build directories
 target/
 backend/target/
+backend/maven_extracted/
 frontend/dist/
 frontend/node_modules/

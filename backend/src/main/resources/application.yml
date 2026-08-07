@@ -2,7 +2,7 @@ spring:
   application:
     name: backend
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:aibi}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:aibi}
     username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:MySQL123}
   jpa:
@@ -39,7 +39,7 @@ spring:
             enable: true
 
 server:
-  port: 8080
+  port: 8081
   forward-headers-strategy: framework
 
 jwt:
