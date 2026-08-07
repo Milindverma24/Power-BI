@@ -13,8 +13,6 @@ spring:
       ddl-auto: update
     open-in-view: false
     show-sql: false
-    properties:
-      hibernate: {}
   flyway:
     enabled: true
     baseline-on-migrate: true
