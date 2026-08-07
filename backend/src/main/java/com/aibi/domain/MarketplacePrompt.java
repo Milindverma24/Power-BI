@@ -35,6 +35,7 @@ public class MarketplacePrompt {
     private String authorName; // The user who shared it
 
     @Column(nullable = false)
+    @Builder.Default
     private Integer upvotes = 0;
 
     @CreationTimestamp
